@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    name: Windows packages
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Release build
+        run: cargo build --release
+      - name: Portable zip
+        shell: pwsh
+        run: |
+          $ver = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches.Groups[1].Value
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File packaging\windows\build-portable.ps1 -Version $ver
+      - name: NSIS
+        continue-on-error: true
+        run: |
+          choco install nsis -y --no-progress
+          $ver = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches.Groups[1].Value
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" "/DVERSION=$ver" "/DRELEASEDIR=$PWD\target\release" packaging\windows\x52-integrity.nsi
+      - name: SHA256
+        shell: pwsh
+        run: |
+          Get-ChildItem dist -File | ForEach-Object {
+            $h = Get-FileHash $_.FullName -Algorithm SHA256
+            "{0}  {1}" -f $h.Hash.ToLower(), $_.Name
+          } | Set-Content dist\SHA256SUMS-windows.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/*
+
+  linux:
+    name: Linux packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: GUI build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxkbcommon-dev libwayland-dev pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Release build
+        run: cargo build --release
+      - name: cargo-deb
+        continue-on-error: true
+        run: |
+          cargo install cargo-deb --locked
+          cargo deb --no-build
+          mkdir -p dist
+          cp target/debian/*.deb dist/ || true
+      - name: AppImage / AppDir
+        continue-on-error: true
+        run: |
+          mkdir -p dist
+          curl -sL -o appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+          sudo mv appimagetool /usr/local/bin/appimagetool
+          bash packaging/linux/build-appimage.sh
+      - name: SHA256
+        run: |
+          mkdir -p dist
+          (cd dist && sha256sum * > SHA256SUMS-linux.txt) || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*
+
+  publish:
+    name: GitHub release
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Flatten
+        run: |
+          mkdir -p dist
+          find artifacts -type f -exec cp {} dist/ \;
+          ls -la dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: true
+          body: |
+            Unsigned CI artifacts. Sign Windows EXEs before wide distribution (see docs/RELEASE.md).
+
+            - Windows portable zip and NSIS setup (if built)
+            - Linux .deb and AppImage (if built)

@@ -1,0 +1,20 @@
+/target/
+**/*.rs.bk
+.idea/
+.vscode/
+*.pdb
+*.ilk
+dist/
+.packaging-work/
+*.AppImage
+*.deb
+*.msi
+*.exe.bak
+Thumbs.db
+.DS_Store
+install-*.log
+
+# Local Logitech driver export (copyrighted; see tools/backups/sai075c/README.md)
+tools/backups/sai075c/*
+!tools/backups/sai075c/README.md
+tools/backups/x52-driver-state.json

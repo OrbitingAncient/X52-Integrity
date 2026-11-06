@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "name": "example-monitor-only",
+  "description": "Ships with the repo. All write flags false. Safe to load in x52-monitor.",
+  "safety": {
+    "monitor_only": true,
+    "allow_vendor_commands": false,
+    "allow_virtual_joystick_output": false,
+    "allow_keyboard_injection": false,
+    "allow_macros": false,
+    "require_apply_confirmation": true
+  },
+  "device": {
+    "vid": 1699,
+    "pid": null,
+    "product_match": null
+  },
+  "processing": {
+    "default": {
+      "deadzone": 0.02,
+      "curve": "linear",
+      "expo": 1.5,
+      "invert": false
+    },
+    "axes": {
+      "Slider": {
+        "deadzone": 0.01,
+        "curve": "linear",
+        "expo": 1.0,
+        "invert": false
+      },
+      "X": {
+        "deadzone": 0.03,
+        "curve": "expo",
+        "expo": 1.6,
+        "invert": false
+      },
+      "Y": {
+        "deadzone": 0.03,
+        "curve": "expo",
+        "expo": 1.6,
+        "invert": false
+      }
+    },
+    "ghosting": {
+      "enabled": false,
+      "press_reports": 2,
+      "release_reports": 2
+    }
+  },
+  "auto_load": {
+    "enabled": false,
+    "process_name": null
+  },
+  "bindings": [
+    {
+      "source": "B01 Trigger",
+      "action": "documented-only: would fire a weapon mapping in a future write-path build",
+      "enabled": false
+    }
+  ]
+}

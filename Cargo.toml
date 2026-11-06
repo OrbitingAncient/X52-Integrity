@@ -1,0 +1,85 @@
+[package]
+name = "x52-integrity"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.80"
+description = "User-space Saitek/Logitech X52 HOTAS companion for Windows 10/11 (HVCI-safe) and Linux"
+license = "MIT"
+publish = false
+authors = ["OrbitingAncient"]
+repository = "https://github.com/OrbitingAncient/X52-Integrity"
+homepage = "https://github.com/OrbitingAncient/X52-Integrity"
+readme = "README.md"
+keywords = ["hotas", "x52", "hid", "joystick", "hvci"]
+categories = ["hardware-support"]
+
+[features]
+default = []
+# Compiles optional vendor-send and virtual-joystick symbols.
+# Runtime SafetyGate still refuses writes unless explicitly armed.
+write_path = []
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+eframe = { version = "0.31", default-features = false, features = ["glow", "default_fonts", "x11", "wayland"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Devices_HumanInterfaceDevice",
+    "Win32_Storage_FileSystem",
+    "Win32_Security",
+    "Win32_System_Console",
+    "Win32_System_IO",
+    "Win32_System_Threading",
+    "Win32_System_Registry",
+    "Win32_System_SystemInformation",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(unix)'.dependencies]
+evdev = "0.12"
+libc = "0.2"
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+# eframe/winit need these features on Linux; they are ignored on Windows.
+# Pulled via eframe's optional deps when building on unix.
+
+[[bin]]
+name = "x52-monitor"
+path = "src/main.rs"
+
+[[bin]]
+name = "x52-integrity"
+path = "src/bin/x52-integrity/main.rs"
+
+[lib]
+name = "x52_integrity"
+path = "src/lib.rs"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
+
+[package.metadata.deb]
+name = "x52-integrity"
+maintainer = "OrbitingAncient"
+copyright = "2026 OrbitingAncient"
+license-file = ["LICENSE", "0"]
+extended-description = "User-space companion for the Saitek/Logitech X52 HOTAS."
+depends = "$auto"
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/x52-integrity", "usr/bin/", "755"],
+    ["target/release/x52-monitor", "usr/bin/", "755"],
+    ["packaging/linux/x52-integrity.desktop", "usr/share/applications/", "644"],
+    ["packaging/linux/99-x52-integrity.rules", "usr/lib/udev/rules.d/", "644"],
+    ["README.md", "usr/share/doc/x52-integrity/", "644"],
+]

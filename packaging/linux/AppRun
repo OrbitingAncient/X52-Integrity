@@ -1,0 +1,9 @@
+#!/bin/sh
+# AppImage entry. Data stays next to the mounted image when X52_INTEGRITY_HOME
+# is unset; we prefer XDG so logs survive unmount.
+HERE="$(dirname "$(readlink -f "$0")")"
+export PATH="$HERE/usr/bin:$PATH"
+if [ -z "$X52_INTEGRITY_HOME" ]; then
+  export X52_INTEGRITY_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/x52-integrity"
+fi
+exec "$HERE/usr/bin/x52-integrity" "$@"

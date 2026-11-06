@@ -1,0 +1,19 @@
+# Saitek / Logitech X52 and X52 Pro — grant the seat user access to evdev.
+# Installed to /usr/lib/udev/rules.d/ by the .deb, or copy manually:
+#   sudo cp 99-x52-integrity.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules && sudo udevadm trigger
+#
+# TAG+="uaccess" is the systemd-logind path. GROUP="input" covers sessions
+# without logind. MODE=0660 is the fallback.
+
+# X52 Flight Control System (legacy)
+SUBSYSTEM=="input", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="0255", MODE="0660", GROUP="input", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="0255", MODE="0660", GROUP="input", TAG+="uaccess"
+
+# X52
+SUBSYSTEM=="input", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="075c", MODE="0660", GROUP="input", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="075c", MODE="0660", GROUP="input", TAG+="uaccess"
+
+# X52 Pro
+SUBSYSTEM=="input", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="0762", MODE="0660", GROUP="input", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="06a3", ATTRS{idProduct}=="0762", MODE="0660", GROUP="input", TAG+="uaccess"

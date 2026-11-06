@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=X52 Integrity
+Comment=Saitek/Logitech X52 HOTAS companion
+Exec=x52-integrity
+Icon=input-gaming
+Terminal=false
+Categories=Utility;Game;HardwareSettings;
+Keywords=hotas;x52;joystick;saitek;logitech;
+StartupNotify=true
