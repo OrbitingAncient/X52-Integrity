@@ -224,7 +224,8 @@ pub fn uninstall_app_detailed(log: Option<&Logger>) -> Result<String, Error> {
             Err(e) => {
                 // One retry after a short wait for AV / Explorer scanners.
                 std::thread::sleep(std::time::Duration::from_millis(200));
-                fs::remove_dir_all(&dest).map_err(|_| Error::Io(format!("remove install dir: {e}")))?;
+                fs::remove_dir_all(&dest)
+                    .map_err(|_| Error::Io(format!("remove install dir: {e}")))?;
             }
         }
     }
