@@ -74,6 +74,13 @@ impl Logger {
         self.push("ERR", text.into());
     }
 
+    /// Drop the file handle so the install directory can be deleted on Windows.
+    pub fn close_file(&self) {
+        if let Ok(mut g) = self.inner.lock() {
+            g.file = None;
+        }
+    }
+
     /// Clear the in-memory ring. The file is left intact.
     pub fn clear(&self) {
         if let Ok(mut g) = self.inner.lock() {

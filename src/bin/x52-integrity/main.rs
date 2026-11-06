@@ -221,7 +221,7 @@ fn run_install(silent: bool) -> i32 {
 }
 
 fn run_uninstall(silent: bool) -> i32 {
-    let log = Logger::new(Some(paths::install_log_path()));
+    let log = Logger::new(None);
     match install::uninstall_app_detailed(Some(&log)) {
         Ok(msg) => {
             coutln(&msg);

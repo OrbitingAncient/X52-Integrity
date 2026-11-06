@@ -210,12 +210,23 @@ pub fn uninstall_app_detailed(log: Option<&Logger>) -> Result<String, Error> {
         log.info(format!("Removed {s}"));
     }
 
+    // Release any log file inside `dest` before delete (Windows will not
+    // remove a directory while a handle is open).
+    log.close_file();
+
     if paths::running_from_install_dir() {
         schedule_delete_after_exit(&dest);
         return Ok("Uninstalled. This window will close so the folder can be removed.".into());
     }
     if dest.exists() {
-        fs::remove_dir_all(&dest)?;
+        match fs::remove_dir_all(&dest) {
+            Ok(()) => {}
+            Err(e) => {
+                // One retry after a short wait for AV / Explorer scanners.
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                fs::remove_dir_all(&dest).map_err(|_| Error::Io(format!("remove install dir: {e}")))?;
+            }
+        }
     }
     Ok(format!("Removed {}", dest.display()))
 }

@@ -365,7 +365,10 @@ impl App {
                     }
                     r.message
                 }),
-                Confirm::RemoveApp => install::uninstall_app(),
+                Confirm::RemoveApp => {
+                    log.close_file();
+                    install::uninstall_app()
+                }
                 Confirm::InboxHid => driver_action(true),
                 Confirm::RestoreLogitech => driver_action(false),
             };
